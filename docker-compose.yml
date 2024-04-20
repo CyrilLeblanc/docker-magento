@@ -1,0 +1,76 @@
+version: "3"
+
+services:
+  magento:
+    container_name: ${CONTAINER_PREFIX}-magento
+    build: ./container-magento
+    volumes:
+      - ${MAGENTO_SRC}:/var/www/html
+      - ./container-magento/app.ini:/usr/local/etc/php/conf.d/app.ini:ro
+    extra_hosts:
+      - host.docker.internal:host-gateway
+      - magento.localhost:127.0.0.1
+
+  mariadb:
+    container_name: ${CONTAINER_PREFIX}-mariadb
+    image: mariadb:10.6
+    volumes:
+      - ./container-mariadb/data:/var/lib/mysql
+      - ./container-mariadb/backup:/backup
+    environment:
+      - MARIADB_ROOT_PASSWORD=${MARIADB_ROOT_PASSWORD}
+      - MARIADB_DATABASE=${MARIADB_DATABASE}
+      - MARIADB_USER=${MARIADB_USER}
+      - MARIADB_PASSWORD=${MARIADB_PASSWORD}
+
+  redis:
+    container_name: ${CONTAINER_PREFIX}-redis
+    image: redis:7.0
+
+  opensearch:
+    container_name: ${CONTAINER_PREFIX}-opensearch
+    image: opensearchproject/opensearch:2.12.0
+    environment:
+      - OPENSEARCH_INITIAL_ADMIN_PASSWORD=${OPENSEARCH_INITIAL_ADMIN_PASSWORD}
+      - discovery.type=single-node
+      - plugins.security.disabled=true
+
+  varnish:
+    container_name: ${CONTAINER_PREFIX}-varnish
+    image: varnish:7.5
+    volumes:
+      - ./container-varnish/default.vcl:/etc/varnish/default.vcl:ro
+    links:
+      - magento
+
+  nginx:
+    container_name: ${CONTAINER_PREFIX}-nginx
+    image: nginx:1.24
+    volumes:
+      - ./container-nginx/magento.localhost.conf:/etc/nginx/conf.d/magento.localhost.conf:ro
+      - ./container-nginx/magento.localhost.crt:/etc/nginx/ssl/magento.localhost.crt:ro
+      - ./container-nginx/magento.localhost.key:/etc/nginx/ssl/magento.localhost.key:ro
+    ports:
+      - 80:80
+      - 443:443
+    extra_hosts:
+      - magento.localhost:127.0.0.1
+    depends_on:
+      - varnish
+
+  phpmyadmin:
+    container_name: ${CONTAINER_PREFIX}-phpmyadmin
+    image: phpmyadmin/phpmyadmin:latest
+    ports:
+      - 8080:80
+    environment:
+      - PMA_ARBITRARY=1
+      - PMA_HOST=mariadb
+      - PMA_USER=root
+      - PMA_PASSWORD=${MARIADB_ROOT_PASSWORD}
+
+  mailhog:
+    container_name: ${CONTAINER_PREFIX}-mailhog
+    image: mailhog/mailhog:latest
+    ports:
+      - 8025:8025

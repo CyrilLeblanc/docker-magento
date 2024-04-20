@@ -1,0 +1,4 @@
+app
+.env
+container-mariadb/data
+container-mariadb/backup
