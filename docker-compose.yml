@@ -10,6 +10,10 @@ services:
     extra_hosts:
       - host.docker.internal:host-gateway
       - magento.localhost:127.0.0.1
+    depends_on:
+      - mariadb
+      - redis
+      - opensearch
 
   mariadb:
     container_name: ${CONTAINER_PREFIX}-mariadb
@@ -40,7 +44,7 @@ services:
     image: varnish:7.5
     volumes:
       - ./container-varnish/default.vcl:/etc/varnish/default.vcl:ro
-    links:
+    depends_on:
       - magento
 
   nginx:
@@ -68,6 +72,8 @@ services:
       - PMA_HOST=mariadb
       - PMA_USER=root
       - PMA_PASSWORD=${MARIADB_ROOT_PASSWORD}
+    depends_on:
+      - mariadb
 
   mailhog:
     container_name: ${CONTAINER_PREFIX}-mailhog
