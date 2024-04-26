@@ -1,5 +1,3 @@
-version: "3"
-
 services:
   magento:
     container_name: ${CONTAINER_PREFIX}-magento
