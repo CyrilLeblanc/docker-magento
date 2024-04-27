@@ -16,8 +16,8 @@ services:
     container_name: ${CONTAINER_PREFIX}-mariadb
     image: mariadb:10.6
     volumes:
-      - ./container-mariadb/data:/var/lib/mysql
-      - ./container-mariadb/backup:/backup
+      - ./data/database:/var/lib/mysql
+      - ./data/backup:/backup
     environment:
       - MARIADB_ROOT_PASSWORD=${MARIADB_ROOT_PASSWORD}
       - MARIADB_DATABASE=${MARIADB_DATABASE}
