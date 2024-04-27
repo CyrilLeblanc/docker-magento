@@ -1,6 +1,6 @@
 # docker-magento
 
-A Docker stack for Magento **2.4.6-p5** (CE) for development and testing.
+A docker-compose template for Magento **2.4.6-p5** (CE) for development and testing.
 
 ## Containers
 
