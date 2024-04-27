@@ -13,9 +13,10 @@ RUN apt-get update && apt-get install -y \
     libxslt-dev \
     libzip-dev \
     git \
-    ssmtp \
-    mailutils \
-    && rm -rf /var/lib/apt/lists/*
+    msmtp \
+    mailutils && \
+    apt-get clean  && \
+    rm -rf /var/lib/apt/lists/*
 
 # Configure GD extension
 RUN docker-php-ext-configure gd --with-freetype --with-jpeg --prefix=/usr
@@ -32,23 +33,26 @@ RUN docker-php-ext-install \
     zip \
     opcache
 
+# Configure PHP
+COPY magento.ini /usr/local/etc/php/conf.d/magento.ini
+
 # Install xdebug
 RUN pecl install xdebug && docker-php-ext-enable xdebug
 
 # Install composer
 COPY --from=composer:2.2 /usr/bin/composer /usr/bin/composer
 
-# Configure SSMTP
-RUN echo "mailhub=mailhog:1025" > /etc/ssmtp/ssmtp.conf
+# Configure msmtprc
+COPY msmtprc /etc/msmtprc
+
+# Enable apache modules
+RUN a2enmod rewrite
 
 # Change www-data UID and GID
 RUN usermod -u $UID www-data && groupmod -g $GID www-data
 
 # Fix permissions
 RUN chown -R www-data:www-data /var/www
-
-# Enable apache modules
-RUN a2enmod rewrite
 
 WORKDIR /var/www/html
 

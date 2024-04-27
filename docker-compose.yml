@@ -4,7 +4,6 @@ services:
     build: ./container-magento
     volumes:
       - ${MAGENTO_SRC}:/var/www/html
-      - ./container-magento/app.ini:/usr/local/etc/php/conf.d/app.ini:ro
     extra_hosts:
       - host.docker.internal:host-gateway
       - magento.localhost:127.0.0.1
