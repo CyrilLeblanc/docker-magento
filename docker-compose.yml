@@ -4,6 +4,9 @@ services:
     build: ./container-magento
     volumes:
       - ${MAGENTO_SRC}:/var/www/html
+    environment:
+      - UID=${UID}
+      - GID=${GID}
     extra_hosts:
       - host.docker.internal:host-gateway
       - magento.localhost:127.0.0.1
@@ -48,14 +51,12 @@ services:
     container_name: ${CONTAINER_PREFIX}-nginx
     image: nginx:1.24
     volumes:
-      - ./container-nginx/magento.localhost.conf:/etc/nginx/conf.d/magento.localhost.conf:ro
-      - ./container-nginx/magento.localhost.crt:/etc/nginx/ssl/magento.localhost.crt:ro
-      - ./container-nginx/magento.localhost.key:/etc/nginx/ssl/magento.localhost.key:ro
+      - ./container-nginx/certs:/etc/nginx/certs:rw
+      - ./container-nginx/conf.d/:/etc/nginx/conf.d:ro
+      - ./container-nginx/proxy_params:/etc/nginx/proxy_params:ro
     ports:
       - 80:80
       - 443:443
-    extra_hosts:
-      - magento.localhost:127.0.0.1
     depends_on:
       - varnish
 
